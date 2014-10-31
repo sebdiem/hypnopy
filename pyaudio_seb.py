@@ -7,19 +7,8 @@ import numpy as np
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 
-app = QtGui.QApplication([])
 
-win = pg.GraphicsWindow(title="Basic plotting examples")
-win.resize(1000,600)
-win.setWindowTitle('pyqtgraph example: Plotting')
-
-# Enable antialiasing for prettier plots
-pg.setConfigOptions(antialias=True)
-
-p = pyaudio.PyAudio()
-
-
-# pyaudio acquisition constants:
+# pyaudio acquisition constants
 RATE = 44100
 CHUNK_SIZE = 2**9 # size of the chunk audio data acquired in one call
                   # 2**9 = about 0.01 s of recording
@@ -29,11 +18,22 @@ WINDOW_SIZE = 2**13 # size of the data on which the DFT operates
 WINDOW_OVERLAP = 0.2
 
 BUFFER_SIZE = int(WINDOW_SIZE*(1 + WINDOW_OVERLAP))
-BUFFER = deque(np.zeros(BUFFER_SIZE), maxlen=BUFFER_SIZE)
 
-# Global variable storing the data to be displayed
-# SPL = Signal Power Level
-FOURIER_SPL = []
+# Global variables
+BUFFER = deque(np.zeros(BUFFER_SIZE), maxlen=BUFFER_SIZE) # audio data history
+FOURIER_SPL = [] # SPL = Signal Power Level : data to be displayed
+
+# pyqtgraph initialization
+app = QtGui.QApplication([])
+
+win = pg.GraphicsWindow(title="Basic plotting examples")
+win.resize(1000,600)
+win.setWindowTitle('pyqtgraph example: Plotting')
+
+pg.setConfigOptions(antialias=True) # Enable antialiasing for prettier plots
+
+# pyaudio initialization
+p = pyaudio.PyAudio()
 
 def callback(in_data, frame_count, time_info, status):
     data = np.fromstring(in_data, np.float32)
