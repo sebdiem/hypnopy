@@ -107,14 +107,33 @@ stream = p.open(format=pyaudio.paFloat32,
 lw = pg.LayoutWidget()
 p6 = pg.PlotWidget(name="Spiral")
 lw.addWidget(p6)
-slider = QtGui.QSlider(orientation=QtCore.Qt.Horizontal)
-slider.setMaximumWidth(100)
 def test(i):
     global SPL_THRESHOLD
-    SPL_THRESHOLD = i - 50.
+    SPL_THRESHOLD = i
+
+class IntLabel(QtGui.QLabel):
+    def setValue(self, i):
+        self.setText('%d dB' % i)
     
+sidebar = QtGui.QWidget()
+verticalLayout = QtGui.QVBoxLayout()
+sidebar.setLayout(verticalLayout)
+sidebar.setMaximumHeight(100)
+sidebar.setMaximumWidth(200)
+slider = QtGui.QSlider(orientation=QtCore.Qt.Horizontal)
 slider.valueChanged.connect(test)
-lw.addWidget(slider)
+slider.setMinimum(-50)
+slider.setMaximum(50)
+slider.setSingleStep(1)
+lab = QtGui.QLabel("SPL threshold:")
+spinbox = IntLabel('0 dB')
+slider.valueChanged.connect(spinbox.setValue)
+verticalLayout.addWidget(lab)
+verticalLayout.addWidget(spinbox)
+verticalLayout.setAlignment(spinbox, QtCore.Qt.AlignHCenter)
+verticalLayout.addWidget(slider)
+
+lw.addWidget(sidebar)
 #p6 = win.addPlot(title="Updating plot")
 p6.setAspectLocked()
 ptr = 0
