@@ -120,12 +120,10 @@ p6.setAspectLocked()
 ptr = 0
 
 MAX_NB_CURVES = 100
-min_curve = p6.plot(pen=pg.mkPen(color=(255, 255, 128)))
-max_curve = p6.plot(pen=pg.mkPen(color=(255, 255, 128)))
-#CURVES = [QtGui.QGraphicsLineItem() for _ in xrange(MAX_NB_CURVES)]
-#for c in CURVES:
-#    p6.addItem(c)
-#    c.setPen(pg.mkPen(color=(255, 255, 128)))
+CURVES = [QtGui.QGraphicsLineItem() for _ in xrange(MAX_NB_CURVES)]
+for c in CURVES:
+    p6.addItem(c)
+    c.setPen(pg.mkPen(color=(255, 255, 128)))
 
 def draw_spiral(freq_max=20000., r_scale=1.):
     r_max = np.log2(freq_max/BASE_FREQUENCIES['C'])
@@ -141,29 +139,26 @@ def draw_spiral(freq_max=20000., r_scale=1.):
         p6.addItem(text)
 
 def blob_data(freq, intensity, r_scale=1.):
-    if intensity < SPL_THRESHOLD:
-        intensity = 0
     r, theta = get_polar_coordinates(freq, r_scale=r_scale)
     blob_length = r_scale*min(1., intensity/50.)
     r_min, r_max = r-blob_length/2., r+blob_length/2.
-    return (r_min*np.cos(theta), 
-            r_max*np.cos(theta),
-            r_min*np.sin(theta),
-            r_max*np.sin(theta))
+    return (r_min*np.cos(theta), r_min*np.sin(theta),
+            r_max*np.cos(theta), r_max*np.sin(theta))
 
 def update():
     global CURVES, SPL_THRESHOLD
     process_data(BUFFER)
-    min_curve_x, min_curve_y = [], []
-    max_curve_x, max_curve_y = [], []
-    for i, freq in enumerate(np.fft.rfftfreq(WINDOW_SIZE, 1./RATE)):
-        x_min, x_max, y_min, y_max = blob_data(freq, FOURIER_SPL[i])
-        min_curve_x.append(x_min)
-        min_curve_y.append(y_min)
-        max_curve_x.append(x_max)
-        max_curve_y.append(y_max)
-    min_curve.setData(min_curve_x, min_curve_y)
-    max_curve.setData(max_curve_x, max_curve_y)
+    ranking = sorted([(spl, i) for i, spl in enumerate(FOURIER_SPL)],
+                     reverse=True)[:MAX_NB_CURVES]
+    frequencies = np.fft.rfftfreq(WINDOW_SIZE, 1./RATE)
+    for j, el in enumerate(ranking):
+        spl, i = el
+        if spl > SPL_THRESHOLD:
+            freq = frequencies[i]
+            blob = blob_data(freq, spl)
+            CURVES[j].setLine(*blob)
+        else:
+            CURVES[j].setLine(0, 0, 0, 0)
 
 draw_spiral()
 
