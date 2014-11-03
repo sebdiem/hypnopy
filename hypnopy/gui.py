@@ -35,6 +35,9 @@ def draw_spiral(plot_widget, freq_max=20000., r_scale=1.):
         text = pg.TextItem(note, anchor=(0.5, 0.5))
         text.setPos((r_max + 1.)*np.cos(theta), (r_max + 1.)*np.sin(theta))
         plot_widget.addItem(text)
+    graphLim = 0.5 * (r_max * 2.2) * r_scale
+    plot_widget.getPlotItem().setRange(xRange=(-graphLim, graphLim),
+                                       yRange=(-graphLim, graphLim))
 
 def blob_data(freq, intensity, min_intensity, max_intensity, r_scale=1.):
     r, theta = get_polar_coordinates(freq, r_scale=r_scale)
@@ -98,6 +101,8 @@ def create_slider_widget(label, unit, connect, max_width):
 
 def create_plot_widget(name):
     plot = pg.PlotWidget(name=name)
+    plot.hideAxis('left')
+    plot.hideAxis('bottom')
     plot.setAspectLocked()
     return plot
 
