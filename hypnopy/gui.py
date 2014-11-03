@@ -150,7 +150,7 @@ def launch_gui(nb_of_curves=100, freq_test=None):
     if freq_test is None:
         update_fun = lambda : update(blobs)
     else:
-        buf = make_pure_tone(8000, RATE)
+        buf = make_pure_tone(8000, len(get_buffer()), RATE)
         update_fun = lambda : update(blobs, buf)
 
     timer = QtCore.QTimer()

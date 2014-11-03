@@ -1,7 +1,7 @@
 import numpy as np
 
-def make_pure_tone(freq, rate):
-    t = np.arange(len(BUFFER)) * 1./rate
+def make_pure_tone(freq, size, rate):
+    t = np.arange(size) * 1./rate
     return np.sin(t * np.pi * 2. * freq)
 
 def sound_power_densities(x, window=np.hanning):
