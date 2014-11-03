@@ -136,20 +136,19 @@ def create_window():
     layout.show()
     return layout, plot_widget
 
-def launch_gui():
+def launch_gui(nb_of_curves=100):
     # pyqtgraph initialization
     app = QtGui.QApplication([])
     layout, plot_widget = create_window()
 
-    MAX_NB_CURVES = 100
-    CURVES = [QtGui.QGraphicsLineItem() for _ in xrange(MAX_NB_CURVES)]
-    for c in CURVES:
-        plot_widget.addItem(c)
-        c.setPen(pg.mkPen(color=(255, 255, 128)))
+    blobs = [QtGui.QGraphicsLineItem() for _ in xrange(nb_of_curves)]
+    for blob in blobs:
+        plot_widget.addItem(blob)
+        blob.setPen(pg.mkPen(color=(255, 255, 128)))
     draw_spiral(plot_widget)
 
     timer = QtCore.QTimer()
-    timer.timeout.connect(lambda : update(CURVES))
+    timer.timeout.connect(lambda : update(blobs))
     timer.start(20)
 
     QtGui.QApplication.instance().exec_()
