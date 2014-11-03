@@ -14,8 +14,8 @@ This package requires the following 3rd party libraries:
 
 To run this program you can run the following command from the project's root:
 
-    $ ./bin/run
+    $ ./bin/hypnopy
 
-Some options are available and detailed by the following command:
+The list of command line options is available with:
 
-    $ ./bin/run -h
+    $ ./bin/hypnopy -h
