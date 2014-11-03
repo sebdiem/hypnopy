@@ -117,7 +117,7 @@ def create_plot_widget(name):
 def create_window():
     win = QtGui.QMainWindow()
     win.resize(1000,600)
-    win.setWindowTitle('pyqtgraph example: Plotting')
+    win.setWindowTitle('HypnoPy')
 
     pg.setConfigOptions(antialias=True) # Enable antialiasing for prettier plots
 
