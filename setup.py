@@ -5,14 +5,14 @@ try:
 except ImportError:
     from distutils.core import setup
 
-    config = {
+config = {
     'description': 'A new project',
     'author': 'Sébastien Diemer',
     'url': 'https://github.com/sebdiem/hypnopy',
     'download_url': 'https://github.com/sebdiem/hypnopy',
     'author_email': 'diemersebastien@yahoo.fr',
     'version': '0.1',
-    'install_requires': ['nose'],
+    'install_requires': ['nose', 'numpy', 'pyaudio', 'pyqtgraph'],
     'packages': ['hypnopy'],
     'scripts': [],
     'name': 'hypnopy'
