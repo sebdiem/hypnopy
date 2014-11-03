@@ -4,9 +4,9 @@ import numpy as np
 import pyaudio
 
 # pyaudio acquisition constants
-RATE = 44100
+RATE = 44100 # Hz
 _CHUNK_SIZE = 2**9 # size of the chunk audio data acquired in one call
-                  # 2**9 = about 0.01 s of recording
+                   # 2**9 samples = about 0.01 s of recording
 
 _BUFFER_SIZE = 2**13 # max size of the data on which the DFT operates
 _BUFFER = deque(np.zeros(_BUFFER_SIZE), maxlen=_BUFFER_SIZE) # audio data history
