@@ -2,7 +2,7 @@
 
 A real-time sound frequency vizualizer written in python.
 
-## Dependancies
+## Dependencies
 
 This package requires the following 3rd party libraries:
 
