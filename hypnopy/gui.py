@@ -12,6 +12,9 @@ def _update_SPL_threshold(i):
     global _SPL_THRESHOLD
     _SPL_THRESHOLD = i
 
+def display(intensity):
+    return intensity > _SPL_THRESHOLD
+
 def get_polar_coordinates(freq, r_scale=1.):
     """Returns a tuple (r, theta) representing polar coordinates of a frequency `freq`.
     The twelve notes of the Pythagorician scale can be displayed on a 2D spiral, with
@@ -53,24 +56,23 @@ def blob_coordinates(freq, intensity, min_intensity, max_intensity, r_scale=1.):
     return (r_min*np.cos(theta), r_min*np.sin(theta),
             r_max*np.cos(theta), r_max*np.sin(theta))
 
-def update(CURVES):
-    global _SPL_THRESHOLD, SAVE
-    BUFFER = get_buffer()
+def update(blobs):
+    buf = get_buffer()
     #import numpy as np
     #t = np.arange(len(BUFFER)) * 1./44100
     #BUFFER = np.sin(t * np.pi * 2. * 8150.)
-    FOURIER_SPL = sound_power_densities(BUFFER)
-    ranking = sorted([(spl, i) for i, spl in enumerate(FOURIER_SPL)],
-                     reverse=True)[:len(CURVES)]
-    frequencies = np.fft.rfftfreq(len(BUFFER), 1./RATE)
+    densities = sound_power_densities(buf)
+    ranking = sorted([(spd, i) for i, spd in enumerate(densities)],
+                     reverse=True)[:len(blobs)]
+    frequencies = np.fft.rfftfreq(len(buf), 1./RATE)
     for j, el in enumerate(ranking):
-        spl, i = el
-        if spl > _SPL_THRESHOLD:
+        spd, i = el
+        if display(spd):
             freq = frequencies[i]
-            blob = blob_coordinates(freq, spl, min_intensity=_SPL_THRESHOLD, max_intensity=96.)
-            CURVES[j].setLine(*blob)
+            blob = blob_coordinates(freq, spd, min_intensity=_SPL_THRESHOLD, max_intensity=96.)
+            blobs[j].setLine(*blob)
         else:
-            CURVES[j].setLine(0, 0, 0, 0)
+            blobs[j].setLine(0, 0, 0, 0)
 
 def create_slider_widget(label, unit, min_value, max_value, init_value, step,
                          connect, max_width):
