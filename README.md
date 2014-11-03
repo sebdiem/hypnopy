@@ -14,8 +14,8 @@ This package requires the following 3rd party libraries:
 
 To run this program you can run the following command from the project's root:
 
-    ./bin/run
+    $ ./bin/run
 
 Some options are available and detailed by the following command:
 
-    ./bin/run -h
+    $ ./bin/run -h
