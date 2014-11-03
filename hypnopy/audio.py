@@ -8,7 +8,7 @@ RATE = 44100
 _CHUNK_SIZE = 2**9 # size of the chunk audio data acquired in one call
                   # 2**9 = about 0.01 s of recording
 
-_BUFFER_SIZE = 2**13 # size of the data on which the DFT operates
+_BUFFER_SIZE = 2**13 # max size of the data on which the DFT operates
 _BUFFER = deque(np.zeros(_BUFFER_SIZE), maxlen=_BUFFER_SIZE) # audio data history
 
 def callback(in_data, frame_count, time_info, status):

@@ -8,12 +8,21 @@ from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 
 _SPL_THRESHOLD = 0. # we do not display frequencies whose SPL is below this limit
-def _update_SPL_threshold(i):
+_WINDOW_SIZE = len(get_buffer())
+
+def _update_SPL_THRESHOLD(i):
     global _SPL_THRESHOLD
     _SPL_THRESHOLD = i
 
 def display(intensity):
     return intensity > _SPL_THRESHOLD
+
+def _update_WINDOW_SIZE(i):
+    global _WINDOW_SIZE
+    _WINDOW_SIZE = i
+
+def get_WINDOW_SIZE():
+    return _WINDOW_SIZE
 
 def get_polar_coordinates(freq, r_scale=1.):
     """Returns a tuple (r, theta) representing polar coordinates of a frequency `freq`.
@@ -59,6 +68,7 @@ def blob_coordinates(freq, intensity, min_intensity, max_intensity, r_scale=1.):
 def update(blobs, buf=None):
     if buf is None:
         buf = get_buffer()
+    buf = list(buf)[-get_WINDOW_SIZE():]
     densities = sound_power_densities(buf)
     ranking = sorted([(spd, i) for i, spd in enumerate(densities)],
                      reverse=True)[:len(blobs)]
@@ -95,7 +105,7 @@ def create_slider_widget(label, unit, min_value, max_value, init_value, step,
     slider.valueChanged.connect(connect)
 
     verticalLayout = QtGui.QVBoxLayout()
-    verticalLayout.addWidget(QtGui.QLabel(label))
+    verticalLayout.addWidget(QtGui.QLabel('%s:' % label))
     verticalLayout.addWidget(spinbox)
     verticalLayout.setAlignment(spinbox, QtCore.Qt.AlignHCenter)
     verticalLayout.addWidget(slider)
@@ -106,6 +116,15 @@ def create_slider_widget(label, unit, min_value, max_value, init_value, step,
     slider_widget.setMaximumWidth(max_width)
 
     return slider_widget
+
+def create_sidebar(max_width, *widgets):
+    verticalLayout = QtGui.QVBoxLayout()
+    for w in widgets:
+        verticalLayout.addWidget(w)
+    sidebar = QtGui.QWidget()
+    sidebar.setLayout(verticalLayout)
+    sidebar.setMaximumWidth(max_width)
+    return sidebar
 
 def create_plot_widget(name):
     plot = pg.PlotWidget(name=name)
@@ -122,17 +141,27 @@ def create_window():
     pg.setConfigOptions(antialias=True) # Enable antialiasing for prettier plots
 
     plot_widget = create_plot_widget('Spiral')
-    slider_widget = create_slider_widget(label='SPL threshold:',
-                                         unit='dB',
-                                         min_value=-50,
-                                         max_value=50,
-                                         init_value=0,
-                                         step=1,
-                                         connect=_update_SPL_threshold,
-                                         max_width=200)
+    sidebar_width = 200
+    slider_widget1 = create_slider_widget(label='SPL threshold',
+                                          unit='dB',
+                                          min_value=-50,
+                                          max_value=50,
+                                          init_value=0,
+                                          step=1,
+                                          connect=_update_SPL_THRESHOLD,
+                                          max_width=sidebar_width)
+    slider_widget2 = create_slider_widget(label='Window size',
+                                          unit='',
+                                          min_value=256,
+                                          max_value=len(get_buffer()),
+                                          init_value=len(get_buffer()),
+                                          step=2,
+                                          connect=_update_WINDOW_SIZE,
+                                          max_width=sidebar_width)
+    sidebar = create_sidebar(sidebar_width, slider_widget1, slider_widget2) 
     layout = pg.LayoutWidget()
     layout.addWidget(plot_widget)
-    layout.addWidget(slider_widget)
+    layout.addWidget(sidebar)
     layout.show()
     return layout, plot_widget
 
