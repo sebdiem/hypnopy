@@ -136,12 +136,12 @@ def create_window():
     layout.show()
     return layout, plot_widget
 
-def launch_gui(nb_of_curves=100, freq_test=None):
+def launch_gui(blob_count=100, freq_test=None):
     # pyqtgraph initialization
     app = QtGui.QApplication([])
     layout, plot_widget = create_window()
 
-    blobs = [QtGui.QGraphicsLineItem() for _ in xrange(nb_of_curves)]
+    blobs = [QtGui.QGraphicsLineItem() for _ in xrange(blob_count)]
     for blob in blobs:
         plot_widget.addItem(blob)
         blob.setPen(pg.mkPen(color=(255, 255, 128)))
