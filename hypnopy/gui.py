@@ -1,7 +1,7 @@
 import numpy as np
 
 from audio import RATE, get_buffer
-from fourier import sound_power_densities
+from fourier import sound_power_densities, make_pure_tone
 from note_utils import BASE_FREQUENCIES, get_base_frequency_and_power_of_two, get_frequency
 
 from pyqtgraph.Qt import QtGui, QtCore
@@ -56,11 +56,9 @@ def blob_coordinates(freq, intensity, min_intensity, max_intensity, r_scale=1.):
     return (r_min*np.cos(theta), r_min*np.sin(theta),
             r_max*np.cos(theta), r_max*np.sin(theta))
 
-def update(blobs):
-    buf = get_buffer()
-    #import numpy as np
-    #t = np.arange(len(BUFFER)) * 1./44100
-    #BUFFER = np.sin(t * np.pi * 2. * 8150.)
+def update(blobs, buf=None):
+    if buf is None:
+        buf = get_buffer()
     densities = sound_power_densities(buf)
     ranking = sorted([(spd, i) for i, spd in enumerate(densities)],
                      reverse=True)[:len(blobs)]
@@ -138,7 +136,7 @@ def create_window():
     layout.show()
     return layout, plot_widget
 
-def launch_gui(nb_of_curves=100):
+def launch_gui(nb_of_curves=100, freq_test=None):
     # pyqtgraph initialization
     app = QtGui.QApplication([])
     layout, plot_widget = create_window()
@@ -149,8 +147,14 @@ def launch_gui(nb_of_curves=100):
         blob.setPen(pg.mkPen(color=(255, 255, 128)))
     draw_spiral(plot_widget)
 
+    if freq_test is None:
+        update_fun = lambda : update(blobs)
+    else:
+        buf = make_pure_tone(8000, RATE)
+        update_fun = lambda : update(blobs, buf)
+
     timer = QtCore.QTimer()
-    timer.timeout.connect(lambda : update(blobs))
+    timer.timeout.connect(update_fun)
     timer.start(20)
 
     QtGui.QApplication.instance().exec_()
