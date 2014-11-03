@@ -30,4 +30,9 @@ def start_acquisition():
                     input=True,
                     frames_per_buffer=_CHUNK_SIZE,
                     stream_callback=callback)
-    return p
+    return p, stream
+
+def clean_pyaudio(pyaudio_instance, stream):
+    stream.stop_stream()
+    stream.close()
+    pyaudio_instance.terminate()
