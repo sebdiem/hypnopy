@@ -23,23 +23,29 @@ def get_polar_coordinates(freq, r_scale=1.):
     theta = (freq - C0)*2*np.pi/(C1 - C0)
     return r_scale*(octave + theta/(2*np.pi)), theta
 
-def draw_spiral(plot_widget, freq_max=20000., r_scale=1.):
-    r_max = np.log2(freq_max/BASE_FREQUENCIES['C'])
-    r = np.linspace(0, r_max, 1000)
-    theta = 2*np.pi*r*r_scale
-    plot_widget.plot(r*np.cos(theta), r*np.sin(theta), pen=pg.mkPen(color=(128, 64, 64)))
+def draw_legend(plot_widget, freq_max=20000., r_scale=1., color=(128, 64, 64)):
+    r_max = np.log2(freq_max/BASE_FREQUENCIES['C']) * r_scale
     for note, freq in BASE_FREQUENCIES.items():
         _, theta = get_polar_coordinates(freq)
-        plot_widget.plot([0, r_max*np.cos(theta)], [0, r_max*np.sin(theta)],
-                pen=pg.mkPen(color=(128, 64, 64), style=QtCore.Qt.DotLine))
+        plot_widget.plot([0, r_max*np.cos(theta)], 
+                         [0, r_max*np.sin(theta)],
+                         pen=pg.mkPen(color=color, style=QtCore.Qt.DotLine))
         text = pg.TextItem(note, anchor=(0.5, 0.5))
         text.setPos((r_max + 1.)*np.cos(theta), (r_max + 1.)*np.sin(theta))
         plot_widget.addItem(text)
-    graphLim = 0.5 * (r_max * 2.2) * r_scale
+
+def draw_spiral(plot_widget, freq_max=20000., r_scale=1., color=(128, 64, 64)):
+    r_max = np.log2(freq_max/BASE_FREQUENCIES['C']) * r_scale
+    r = np.linspace(0, r_max, 1000)
+    theta = 2 * np.pi * r
+    plot_widget.plot(r*np.cos(theta), r*np.sin(theta), pen=pg.mkPen(color=color))
+    draw_legend(plot_widget, freq_max, r_scale, color)
+
+    graphLim = 0.5 * (r_max * 2.2)
     plot_widget.getPlotItem().setRange(xRange=(-graphLim, graphLim),
                                        yRange=(-graphLim, graphLim))
 
-def blob_data(freq, intensity, min_intensity, max_intensity, r_scale=1.):
+def blob_coordinates(freq, intensity, min_intensity, max_intensity, r_scale=1.):
     r, theta = get_polar_coordinates(freq, r_scale=r_scale)
     intensity_diff = max(0, intensity - min_intensity)
     blob_length = r_scale * min(1., intensity_diff / (max_intensity - min_intensity))
@@ -50,9 +56,9 @@ def blob_data(freq, intensity, min_intensity, max_intensity, r_scale=1.):
 def update(CURVES):
     global _SPL_THRESHOLD, SAVE
     BUFFER = get_buffer()
-    import numpy as np
-    t = np.arange(len(BUFFER)) * 1./44100
-    BUFFER = np.sin(t * np.pi * 2. * 8150.)
+    #import numpy as np
+    #t = np.arange(len(BUFFER)) * 1./44100
+    #BUFFER = np.sin(t * np.pi * 2. * 8150.)
     FOURIER_SPL = sound_power_densities(BUFFER)
     ranking = sorted([(spl, i) for i, spl in enumerate(FOURIER_SPL)],
                      reverse=True)[:len(CURVES)]
@@ -61,12 +67,13 @@ def update(CURVES):
         spl, i = el
         if spl > _SPL_THRESHOLD:
             freq = frequencies[i]
-            blob = blob_data(freq, spl, min_intensity=_SPL_THRESHOLD, max_intensity=96.)
+            blob = blob_coordinates(freq, spl, min_intensity=_SPL_THRESHOLD, max_intensity=96.)
             CURVES[j].setLine(*blob)
         else:
             CURVES[j].setLine(0, 0, 0, 0)
 
-def create_slider_widget(label, unit, connect, max_width):
+def create_slider_widget(label, unit, min_value, max_value, init_value, step,
+                         connect, max_width):
     """Creates a widget composed of a vertical layout with:
     - a label describing the quantity being changed by the slider
     - a label showing the current value of the quantity
@@ -76,12 +83,13 @@ def create_slider_widget(label, unit, connect, max_width):
         def setValue(self, i):
             self.setText('%d %s' % (i, unit))
     slider = QtGui.QSlider(orientation=QtCore.Qt.Horizontal)
-    slider.setMinimum(-50)
-    slider.setMaximum(50)
-    slider.setSingleStep(1)
+    slider.setMinimum(min_value)
+    slider.setMaximum(max_value)
+    slider.setSingleStep(step)
+    slider.setValue(init_value)
 
     spinbox = IntLabel()
-    spinbox.setValue(0)
+    spinbox.setValue(init_value)
 
     slider.valueChanged.connect(spinbox.setValue)
     slider.valueChanged.connect(connect)
@@ -116,6 +124,10 @@ def create_window():
     plot_widget = create_plot_widget('Spiral')
     slider_widget = create_slider_widget(label='SPL threshold:',
                                          unit='dB',
+                                         min_value=-50,
+                                         max_value=50,
+                                         init_value=0,
+                                         step=1,
                                          connect=_update_SPL_threshold,
                                          max_width=200)
     layout = pg.LayoutWidget()
