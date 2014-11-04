@@ -14,7 +14,7 @@ _BUFFER = deque(np.zeros(_BUFFER_SIZE), maxlen=_BUFFER_SIZE) # audio data histor
 def callback(in_data, frame_count, time_info, status):
     data = np.fromstring(in_data, np.float32)
     _BUFFER.extend(data)
-    return (None, pyaudio.paContinue) # When using pyaudio in input-only, the
+    return (data, pyaudio.paContinue) # When using pyaudio in input-only, the
                                       # callback should return None as first
                                       # element
 
@@ -33,6 +33,6 @@ def start_acquisition():
     return p, stream
 
 def clean_pyaudio(pyaudio_instance, stream):
-    stream.stop_stream()
+    #stream.stop_stream() # Does not work with Ubuntu. pyaudio bug?
     stream.close()
     pyaudio_instance.terminate()
